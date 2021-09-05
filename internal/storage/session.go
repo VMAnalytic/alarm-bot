@@ -75,7 +75,15 @@ func (s *MemorySessionStorage) ExistInState(ctx context.Context, ID int, state a
 }
 
 func (s *MemorySessionStorage) Delete(ctx context.Context, ID int) {
-	panic("implement me")
+	s.Lock()
+
+	defer s.Unlock()
+
+	if _, found := s.sessions[ID]; !found {
+		return
+	}
+
+	delete(s.sessions, ID)
 }
 
 func (s *MemorySessionStorage) StartGC() {

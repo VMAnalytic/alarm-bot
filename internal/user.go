@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"github.com/pkg/errors"
 	"time"
 )
@@ -11,6 +12,7 @@ type Status uint8
 const (
 	_ = iota
 	Active
+	InActive
 	Banned
 )
 
@@ -21,6 +23,18 @@ var (
 	ErrContactAlreadyExists  = errors.New("contact already exists")
 	ErrContactsLimitExceeded = errors.New("contacts list is full")
 )
+
+type ErrContactNotFound struct {
+	ID int
+}
+
+func NewErrContactNotFound(ID int) *ErrContactNotFound {
+	return &ErrContactNotFound{ID: ID}
+}
+
+func (e *ErrContactNotFound) Error() string {
+	return fmt.Sprintf("contact with ID: %v not found", e.ID)
+}
 
 type Contact struct {
 	UserID int
@@ -63,6 +77,10 @@ func (u *User) RemoveContact(c *Contact) error {
 	return nil
 }
 
+func (u *User) GetContacts() Contacts {
+	return u.Contacts
+}
+
 func (u *User) Ban() error {
 	u.Status = Banned
 
@@ -73,6 +91,7 @@ type UserStorage interface {
 	Add(ctx context.Context, u *User) error
 	Get(ctx context.Context, ID int) (*User, error)
 	Exists(ctx context.Context, ID int) (bool, error)
+	Remove(ctx context.Context, ID int) error
 }
 
 func (c Contacts) contains(id int) bool {

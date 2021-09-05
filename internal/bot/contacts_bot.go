@@ -38,7 +38,9 @@ func (b *ContactsBot) addContactsHandler(ctx context.Context) func(message *tele
 			msg             string
 			uid             = m.Sender.ID
 			currentContacts string
+			err             error
 		)
+
 		user, err := b.userStorage.Get(ctx, uid)
 		if err != nil {
 			b.handleError(err, uid)
@@ -50,16 +52,13 @@ func (b *ContactsBot) addContactsHandler(ctx context.Context) func(message *tele
 		b.sessionStorage.Add(ctx, s)
 
 		currentContacts = b.getContactList(user)
-		if currentContacts == "" {
-			currentContacts = "EMPTY"
-		}
 
 		msg = "Please add up to *5* contacts to your alarm list. \n" +
 			"Enter the list of your friends IDs. Use comma to separate IDs. \n" +
 			"*Example*: 1234,5678,9012,3456 \n" +
 			fmt.Sprintf("Your current contacts list is: %s", currentContacts)
 
-		_, err = b.tgBot.Send(m.Sender, msg, telebot.ModeMarkdown)
+		_, err = b.tgBot.Send(m.Chat, msg, telebot.ModeMarkdown)
 
 		if err != nil {
 			b.handleError(err, uid)
@@ -73,7 +72,9 @@ func (b *ContactsBot) removeContactsHandler(ctx context.Context) func(message *t
 			msg             string
 			uid             = m.Sender.ID
 			currentContacts string
+			err             error
 		)
+
 		user, err := b.userStorage.Get(ctx, uid)
 		if err != nil {
 			b.handleError(err, uid)
@@ -85,15 +86,12 @@ func (b *ContactsBot) removeContactsHandler(ctx context.Context) func(message *t
 		b.sessionStorage.Add(ctx, s)
 
 		currentContacts = b.getContactList(user)
-		if currentContacts != "" {
-			currentContacts = "EMPTY"
-		}
 
 		msg = fmt.Sprintf("Remove contacts from your alarm list. \n"+
 			"Enter the list of your friends IDs. Use comma to separate IDs. \n"+
 			"Your current contacts list is: %s", currentContacts)
 
-		_, err = b.tgBot.Send(m.Sender, msg)
+		_, err = b.tgBot.Send(m.Chat, msg)
 
 		if err != nil {
 			b.handleError(err, uid)
@@ -107,7 +105,9 @@ func (b *ContactsBot) myContactsHandler(ctx context.Context) func(message *teleb
 			msg             string
 			uid             = m.Sender.ID
 			currentContacts string
+			err             error
 		)
+
 		user, err := b.userStorage.Get(ctx, uid)
 		if err != nil {
 			b.handleError(err, uid)
@@ -115,13 +115,10 @@ func (b *ContactsBot) myContactsHandler(ctx context.Context) func(message *teleb
 		}
 
 		currentContacts = b.getContactList(user)
-		if currentContacts != "" {
-			currentContacts = "EMPTY"
-		}
 
 		msg = fmt.Sprintf("Your current contacts list is: %s", currentContacts)
 
-		_, err = b.tgBot.Send(m.Sender, msg)
+		_, err = b.tgBot.Send(m.Chat, msg)
 
 		if err != nil {
 			b.handleError(err, uid)
@@ -130,13 +127,16 @@ func (b *ContactsBot) myContactsHandler(ctx context.Context) func(message *teleb
 }
 
 func (b *ContactsBot) getContactList(u *app.User) string {
+	if len(u.Contacts) == 0 {
+		return "EMPTY"
+	}
+
 	contacts := strings.Builder{}
-	//contacts.WriteString("\n")
 	for _, contact := range u.Contacts {
 		contacts.WriteString("\n- " + convertor.ToString(contact.UserID))
 	}
 
-	return strings.TrimRight(contacts.String(), ",")
+	return contacts.String()
 }
 
 func (b *ContactsBot) Help() string {

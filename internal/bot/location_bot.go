@@ -2,6 +2,7 @@ package bot
 
 import (
 	"context"
+	"fmt"
 	app "github.com/VMAnalytic/alarm-bot/internal"
 	"golang.org/x/sync/errgroup"
 	"gopkg.in/tucnak/telebot.v2"
@@ -21,6 +22,7 @@ func (b *LocationBot) Register(ctx context.Context, tgBot *telebot.Bot, errCh ch
 	b.init(tgBot, errCh)
 	tgBot.Handle(telebot.OnLocation, func(m *telebot.Message) {
 		var uid = m.Sender.ID
+
 		user, err := b.userStorage.Get(ctx, uid)
 		if err != nil {
 			b.handleError(err, uid)
@@ -32,7 +34,8 @@ func (b *LocationBot) Register(ctx context.Context, tgBot *telebot.Bot, errCh ch
 		for _, contact := range user.Contacts {
 			c := contact
 			g.Go(func() error {
-				_, err := b.tgBot.Send(&telebot.User{ID: c.UserID}, "Help NEEDED")
+				msg := fmt.Sprintf("")
+				_, err := b.tgBot.Send(&telebot.User{ID: c.UserID}, msg)
 				if err != nil {
 					return err
 				}

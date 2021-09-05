@@ -65,3 +65,14 @@ func (s UserFirestoreStorage) Exists(ctx context.Context, ID int) (bool, error) 
 
 	return true, nil
 }
+
+func (s UserFirestoreStorage) Remove(ctx context.Context, ID int) error {
+	_, err := s.client.Collection(collectionUsers).Doc(convertor.ToString(ID)).Delete(ctx)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	//query := s.client.Collection(collectionUsers).Where("contacts", "array-contains", ID).Documents(ctx)
+
+	return nil
+}

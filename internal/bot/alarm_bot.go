@@ -6,11 +6,10 @@ import (
 	"gopkg.in/tucnak/telebot.v2"
 )
 
-// AlarmBot Handles alarm button press
-//
+//AlarmBot Handles alarm button press
+//Ask to send your location to contacts list
 type AlarmBot struct {
 	commonBot
-	//client exchange.Client
 }
 
 func NewAlarmBot() *AlarmBot {
@@ -19,8 +18,9 @@ func NewAlarmBot() *AlarmBot {
 
 func (b *AlarmBot) Register(ctx context.Context, tgBot *telebot.Bot, errCh chan<- error) {
 	b.init(tgBot, errCh)
-	tgBot.Handle(&btnAlarm, b.handler(tgBot))
-	tgBot.Handle(CommandAlarm, b.handler(tgBot))
+
+	b.tgBot.Handle(&btnAlarm, b.handler(tgBot))
+	b.tgBot.Handle(CommandAlarm, b.handler(tgBot))
 }
 
 func (b *AlarmBot) handler(tgBot *telebot.Bot) func(message *telebot.Message) {

@@ -64,11 +64,13 @@ func main() {
 
 	tgListener := bot.NewTelegramListener(tgBot, []bot.Bot{
 		bot.NewStartBot(userStorage),
+		bot.NewMenuBot(),
 		bot.NewAlarmBot(),
 		bot.NewAddContactBot(sessionStorage, userStorage),
 		bot.NewMyInfoBot(),
 		bot.NewTextBot(sessionStorage, userStorage),
 		bot.NewLocationBot(sessionStorage, userStorage),
+		bot.NewUnsubscribeBot(userStorage),
 	})
 
 	if err := tgListener.Listen(ctx); err != nil {

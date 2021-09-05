@@ -7,27 +7,29 @@ import (
 )
 
 type MyInfoBot struct {
-	errCh chan error
+	commonBot
 }
 
 func NewMyInfoBot() *MyInfoBot {
-	return &MyInfoBot{errCh: make(chan error)}
+	return &MyInfoBot{}
 }
 
 func (b *MyInfoBot) Register(ctx context.Context, tgBot *telebot.Bot, errCh chan<- error) {
-	tgBot.Handle(CommandGetMyInfo, b.handler(tgBot))
-	//tgBot.Handle(&btnMyInfo, b.addContactsHandler(tgBot))
-	tgBot.Handle(&btnMyInfo, func(c *telebot.Callback) {
-		b.handler(tgBot)(c.Message)
+	b.init(tgBot, errCh)
 
-		//res := telebot.CallbackResponse{Text: "Insert id"}
-		//tgBot.Send(c.Sender, "hello")
-		//tgBot.Respond(c, &res)
-		//b.Respond(c, &tb.CallbackResponse{...})
+	tgBot.Handle(CommandGetMyInfo, b.handler)
+	tgBot.Handle(&btnMyInfo, func(c *telebot.Callback) {
+		c.Message.Sender = c.Sender //change sender from bot to original user
+		b.handler()(c.Message)
+		err := b.tgBot.Respond(c, &telebot.CallbackResponse{}) //empty response
+		if err != nil {
+			b.handleError(err, c.Sender.ID)
+			return
+		}
 	})
 }
 
-func (b *MyInfoBot) handler(tgBot *telebot.Bot) func(message *telebot.Message) {
+func (b *MyInfoBot) handler() func(message *telebot.Message) {
 	return func(m *telebot.Message) {
 		id := m.Sender.ID
 		fName := m.Sender.FirstName
@@ -36,13 +38,13 @@ func (b *MyInfoBot) handler(tgBot *telebot.Bot) func(message *telebot.Message) {
 
 		//TODO: format msg
 		msg := fmt.Sprintf(
-			"ID: %-20v \nFirst name: %-20s \nLast Name: %-20s \nUserName: %-20s",
+			"*ID*: %-20v \n*First name*: %-20s \n*Last Name*: %-20s \n*UserName*: %-20s",
 			id,
 			fName,
 			lName,
 			userName,
 		)
-		_, err := tgBot.Send(m.Sender, msg)
+		_, err := b.tgBot.Send(m.Chat, msg, telebot.ModeMarkdown)
 		if err != nil {
 			b.errCh <- err
 		}

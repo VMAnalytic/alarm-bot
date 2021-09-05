@@ -15,15 +15,15 @@ func NewMenuBot() *MenuBot {
 
 func (b *MenuBot) Register(ctx context.Context, tgBot *telebot.Bot, errCh chan<- error) {
 	b.init(tgBot, errCh)
-	tgBot.Handle(CommandMenu, func(m *telebot.Message) {
 
-		menu.Reply(
-			menu.Row(btnAddContact),
-			menu.Row(btnRemoveContact),
+	tgBot.Handle(CommandMenu, func(m *telebot.Message) {
+		menu.Inline(
+			menu.Row(btnAddContact, btnRemoveContact, btnMyContacts),
 			menu.Row(btnMyInfo, btnHelp),
+			menu.Row(btnUnsubscribe),
 		)
 
-		_, err := tgBot.Send(m.Sender, "Welcome to alarm bot!", menu)
+		_, err := tgBot.Send(m.Chat, "Menu", menu)
 		if err != nil {
 			b.handleError(err, m.Sender.ID)
 		}

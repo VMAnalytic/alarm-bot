@@ -39,17 +39,17 @@ func (b *StartBot) Register(ctx context.Context, tgBot *telebot.Bot, errCh chan<
 			}
 		}
 
-		//menu.Inline(
-		//	menu.Row(btnAlarm),
-		//	menu.Row(btnAddContact),
-		//	menu.Row(btnMyInfo, btnHelp),
+		//mainMenu.Inline(
+		//	mainMenu.Row(btnAlarm),
+		//	mainMenu.Row(btnAddContact),
+		//	mainMenu.Row(btnMyInfo, btnHelp),
 		//)
 
-		menu.Reply(
-			menu.Row(btnAlarm),
+		mainMenu.Reply(
+			mainMenu.Row(btnAlarm),
 		)
 
-		_, err = tgBot.Send(m.Sender, "Welcome to alarm bot!", menu)
+		_, err = tgBot.Send(m.Sender, "Welcome to alarm bot!", mainMenu)
 		if err != nil {
 			b.handleError(err, uid)
 		}
