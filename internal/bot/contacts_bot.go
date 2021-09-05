@@ -23,13 +23,29 @@ func (b *ContactsBot) Register(ctx context.Context, tgBot *telebot.Bot, errCh ch
 	b.init(tgBot, errCh)
 
 	tgBot.Handle(CommandAddContact, b.addContactsHandler(ctx))
-	tgBot.Handle(&btnAddContact, b.addContactsHandler(ctx))
+	tgBot.Handle(&btnAddContact, func(c *telebot.Callback) {
+		c.Message.Sender = c.Sender //change sender from bot to original user
+		b.addContactsHandler(ctx)(c.Message)
+		err := b.tgBot.Respond(c, &telebot.CallbackResponse{}) //empty response
+		if err != nil {
+			b.handleError(err, c.Sender.ID)
+			return
+		}
+	})
 
 	tgBot.Handle(CommandRemoveContact, b.removeContactsHandler(ctx))
-	tgBot.Handle(&btnAddContact, b.removeContactsHandler(ctx))
+	tgBot.Handle(&btnRemoveContact, func(c *telebot.Callback) {
+		c.Message.Sender = c.Sender //change sender from bot to original user
+		b.removeContactsHandler(ctx)(c.Message)
+		err := b.tgBot.Respond(c, &telebot.CallbackResponse{}) //empty response
+		if err != nil {
+			b.handleError(err, c.Sender.ID)
+			return
+		}
+	})
 
 	tgBot.Handle(CommandMyContacts, b.myContactsHandler(ctx))
-	tgBot.Handle(&btnAddContact, b.myContactsHandler(ctx))
+	tgBot.Handle(&btnMyContacts, b.myContactsHandler(ctx))
 }
 
 func (b *ContactsBot) addContactsHandler(ctx context.Context) func(message *telebot.Message) {

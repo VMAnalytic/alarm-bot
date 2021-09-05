@@ -27,7 +27,6 @@ func NewTextBot(sessionStorage app.SessionStorage, userStorage app.UserStorage) 
 func (b *TextBot) Register(ctx context.Context, tgBot *telebot.Bot, errCh chan<- error) {
 	b.init(tgBot, errCh)
 
-	//b.tgBot.Handle()
 	b.tgBot.Handle(telebot.OnText, func(m *telebot.Message) {
 		var uid = m.Sender.ID
 
@@ -130,7 +129,7 @@ func (b *TextBot) Register(ctx context.Context, tgBot *telebot.Bot, errCh chan<-
 			return
 		}
 
-		_, err := tgBot.Send(m.Sender, "Unexpected message!", mainMenu)
+		_, err := tgBot.Send(m.Sender, "Unexpected message!", mainMenu, telebot.Silent)
 		if err != nil {
 			b.errCh <- errors.New("unexpected message")
 		}
